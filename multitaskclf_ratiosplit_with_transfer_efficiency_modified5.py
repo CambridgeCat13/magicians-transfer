@@ -109,17 +109,14 @@ def evaluate_transfer_efficiency(
     X_target, y_target,
     target_ratios=[0.01],
     seed=42,
-    clf_type="SPORF"
+    clf_type="SPORF"  #"SPORF", "MORF", "HonestForest"
 ):
     """
-    Evaluate transfer efficiency by fixing the train/test split (80/20) for both tasks,
-    and varying how much of the training data is used.
-
-    - Source task is fixed at 0% (baseline) or 100% (transfer)
-    - Target task is swept from 1% to larger ratios
-
-    Test sets remain fixed for fair comparison.
+    Evaluate transfer efficiency using the specified classifier type.
+    Fixes train/test split (80/20), and varies how much target training data is used.
     """
+    assert clf_type in ["SPORF", "MORF", "HonestForest"], f"Invalid clf_type: {clf_type}"
+    print(f"\n=== Transfer Efficiency using {clf_type} ===")
     X_train_source, X_test_source, y_train_source, y_test_source = train_test_split(
         X_source, y_source, test_size=0.2, stratify=y_source, random_state=seed
     )
@@ -137,7 +134,6 @@ def evaluate_transfer_efficiency(
             )
         else:
             X_train_target_sub, y_train_target_sub = X_train_target, y_train_target
-
         clf_base = MultiTaskForestClassifier(
             clf_type=clf_type,
             task_ratios={1: 1.0},
@@ -155,6 +151,7 @@ def evaluate_transfer_efficiency(
         clf_transfer.add_task(1, X_train_target_sub, y_train_target_sub, test_size=0)
         clf_transfer.fit()
         acc_transfer = accuracy_score(y_test_target, clf_transfer.predict(X_test_target, task_id=1))
+
         print(f"Target Task Ratio: {int(ratio * 100)}%")
         print(f"  Baseline  (Source 0%):   Accuracy = {acc_base:.3f}")
         print(f"  Transfer  (Source 100%): Accuracy = {acc_transfer:.3f}")

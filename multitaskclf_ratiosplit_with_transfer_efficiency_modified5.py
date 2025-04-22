@@ -33,11 +33,21 @@ class MultiTaskForestClassifier:
                 "bootstrap": True
             }
         elif clf_type == "MORF":
-            self.model_cls = MORFClassifier
-            self.default_params = { ... }
+            self.model_cls = PatchObliqueRandomForestClassifier
+            self.default_params = {
+                "n_estimators": 200
+             }
         elif clf_type == "HonestForest":
             self.model_cls = HonestForestClassifier
-            self.default_params = { ... }
+            self.default_params = {
+
+                "n_estimators": 200,
+                "max_depth": None,
+                "min_samples_split": 2,
+                "min_samples_leaf": 5,
+                "bootstrap": True,
+                "max_features": "sqrt"
+             }
         else:
             raise ValueError(f"Unsupported tree: {clf_type}")
 
